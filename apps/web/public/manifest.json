@@ -1,0 +1,17 @@
+{
+  "name": "Glass Inspector",
+  "short_name": "GlassInspector",
+  "description": "Glass defect inspection and mapping application",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
