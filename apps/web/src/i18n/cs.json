@@ -1,0 +1,173 @@
+{
+  "common": {
+    "appName": "Glass Inspector",
+    "loading": "Načítání...",
+    "error": "Chyba",
+    "success": "Úspěch",
+    "save": "Uložit",
+    "cancel": "Zrušit",
+    "delete": "Smazat",
+    "edit": "Upravit",
+    "add": "Přidat",
+    "close": "Zavřít",
+    "confirm": "Potvrdit",
+    "search": "Hledat",
+    "filter": "Filtr",
+    "reset": "Reset",
+    "noData": "Žádná data",
+    "actions": "Akce",
+    "yes": "Ano",
+    "no": "Ne",
+    "back": "Zpět",
+    "next": "Další",
+    "previous": "Předchozí"
+  },
+  "auth": {
+    "login": "Přihlásit se",
+    "logout": "Odhlásit se",
+    "email": "E-mail",
+    "password": "Heslo",
+    "loginTitle": "Přihlášení",
+    "loginSubtitle": "Zadejte své přihlašovací údaje",
+    "loginError": "Neplatný e-mail nebo heslo",
+    "logoutSuccess": "Odhlášení proběhlo úspěšně"
+  },
+  "nav": {
+    "inspection": "Kontrola",
+    "admin": "Administrace",
+    "board": "Přehledy",
+    "settings": "Nastavení"
+  },
+  "inspection": {
+    "title": "Kontrola",
+    "selectWorkstation": "Vyberte pracoviště",
+    "selectProduct": "Vyberte produkt",
+    "startSession": "Zahájit kontrolu",
+    "endSession": "Ukončit kontrolu",
+    "pauseSession": "Pozastavit",
+    "resumeSession": "Pokračovat",
+    "currentItem": "Aktuální kus",
+    "itemCount": "Počet kusů",
+    "defectCount": "Počet vad",
+    "addDefect": "Přidat vadu",
+    "noDefects": "Bez vad",
+    "itemOk": "OK",
+    "itemDefective": "Vadný",
+    "nextItem": "Další kus",
+    "batch": "Dávka",
+    "sapMaterial": "SAP materiál",
+    "sapBatch": "SAP šarže",
+    "activeTime": "Aktivní čas",
+    "norm": "Norma",
+    "performance": "Výkon"
+  },
+  "defects": {
+    "title": "Vady",
+    "type": "Typ vady",
+    "severity": "Závažnost",
+    "position": "Pozice",
+    "notes": "Poznámky",
+    "photos": "Fotky",
+    "addPhoto": "Přidat fotku",
+    "takePhoto": "Vyfotit",
+    "selectDefectType": "Vyberte typ vady"
+  },
+  "admin": {
+    "title": "Administrace",
+    "users": "Uživatelé",
+    "products": "Produkty",
+    "workstations": "Pracoviště",
+    "defectTypes": "Typy vad",
+    "sessions": "Kontroly",
+    "auditLogs": "Audit log"
+  },
+  "users": {
+    "title": "Správa uživatelů",
+    "name": "Jméno",
+    "email": "E-mail",
+    "role": "Role",
+    "workstation": "Pracoviště",
+    "defaultWorkstation": "Výchozí pracoviště",
+    "createUser": "Vytvořit uživatele",
+    "editUser": "Upravit uživatele",
+    "deleteUser": "Smazat uživatele",
+    "roles": {
+      "ADMIN": "Administrátor",
+      "INSPECTOR": "Inspektor",
+      "QUALITY": "Kvalita"
+    }
+  },
+  "products": {
+    "title": "Správa produktů",
+    "code": "Kód",
+    "name": "Název",
+    "nameEn": "Název (EN)",
+    "template": "Šablona",
+    "normPerHour": "Norma (ks/hod)",
+    "uploadTemplate": "Nahrát šablonu",
+    "createProduct": "Vytvořit produkt",
+    "editProduct": "Upravit produkt",
+    "deleteProduct": "Smazat produkt"
+  },
+  "workstations": {
+    "title": "Správa pracovišť",
+    "name": "Název",
+    "description": "Popis",
+    "isActive": "Aktivní",
+    "createWorkstation": "Vytvořit pracoviště",
+    "editWorkstation": "Upravit pracoviště",
+    "deleteWorkstation": "Smazat pracoviště"
+  },
+  "defectTypes": {
+    "title": "Správa typů vad",
+    "name": "Název",
+    "nameEn": "Název (EN)",
+    "color": "Barva",
+    "severity": "Závažnost",
+    "createDefectType": "Vytvořit typ vady",
+    "editDefectType": "Upravit typ vady",
+    "deleteDefectType": "Smazat typ vady"
+  },
+  "sessions": {
+    "title": "Přehled kontrol",
+    "product": "Produkt",
+    "workstation": "Pracoviště",
+    "user": "Uživatel",
+    "status": "Stav",
+    "startedAt": "Zahájeno",
+    "endedAt": "Ukončeno",
+    "itemsCount": "Počet kusů",
+    "defectsCount": "Počet vad",
+    "statuses": {
+      "OPEN": "Probíhá",
+      "PAUSED": "Pozastaveno",
+      "CLOSED": "Ukončeno"
+    }
+  },
+  "board": {
+    "title": "Přehledy a analýzy",
+    "heatmap": "Mapa vad",
+    "kpi": "KPI metriky",
+    "topDefects": "Nejčastější vady",
+    "selectProduct": "Vyberte produkt",
+    "selectPeriod": "Období",
+    "periods": {
+      "7days": "Posledních 7 dní",
+      "30days": "Posledních 30 dní",
+      "90days": "Posledních 90 dní",
+      "all": "Celé období"
+    },
+    "metrics": {
+      "totalInspected": "Zkontrolováno",
+      "defectiveItems": "Vadných kusů",
+      "defectRate": "Míra vadovosti",
+      "trend": "Trend"
+    }
+  },
+  "validation": {
+    "required": "Toto pole je povinné",
+    "email": "Neplatný e-mail",
+    "minLength": "Minimální délka je {{min}} znaků",
+    "maxLength": "Maximální délka je {{max}} znaků"
+  }
+}
