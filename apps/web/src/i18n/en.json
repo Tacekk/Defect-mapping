@@ -1,0 +1,173 @@
+{
+  "common": {
+    "appName": "Glass Inspector",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "noData": "No data",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "email": "Email",
+    "password": "Password",
+    "loginTitle": "Login",
+    "loginSubtitle": "Enter your credentials",
+    "loginError": "Invalid email or password",
+    "logoutSuccess": "Successfully logged out"
+  },
+  "nav": {
+    "inspection": "Inspection",
+    "admin": "Administration",
+    "board": "Dashboard",
+    "settings": "Settings"
+  },
+  "inspection": {
+    "title": "Inspection",
+    "selectWorkstation": "Select workstation",
+    "selectProduct": "Select product",
+    "startSession": "Start inspection",
+    "endSession": "End inspection",
+    "pauseSession": "Pause",
+    "resumeSession": "Resume",
+    "currentItem": "Current item",
+    "itemCount": "Item count",
+    "defectCount": "Defect count",
+    "addDefect": "Add defect",
+    "noDefects": "No defects",
+    "itemOk": "OK",
+    "itemDefective": "Defective",
+    "nextItem": "Next item",
+    "batch": "Batch",
+    "sapMaterial": "SAP material",
+    "sapBatch": "SAP batch",
+    "activeTime": "Active time",
+    "norm": "Norm",
+    "performance": "Performance"
+  },
+  "defects": {
+    "title": "Defects",
+    "type": "Defect type",
+    "severity": "Severity",
+    "position": "Position",
+    "notes": "Notes",
+    "photos": "Photos",
+    "addPhoto": "Add photo",
+    "takePhoto": "Take photo",
+    "selectDefectType": "Select defect type"
+  },
+  "admin": {
+    "title": "Administration",
+    "users": "Users",
+    "products": "Products",
+    "workstations": "Workstations",
+    "defectTypes": "Defect Types",
+    "sessions": "Sessions",
+    "auditLogs": "Audit Log"
+  },
+  "users": {
+    "title": "User Management",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "workstation": "Workstation",
+    "defaultWorkstation": "Default workstation",
+    "createUser": "Create user",
+    "editUser": "Edit user",
+    "deleteUser": "Delete user",
+    "roles": {
+      "ADMIN": "Administrator",
+      "INSPECTOR": "Inspector",
+      "QUALITY": "Quality"
+    }
+  },
+  "products": {
+    "title": "Product Management",
+    "code": "Code",
+    "name": "Name",
+    "nameEn": "Name (EN)",
+    "template": "Template",
+    "normPerHour": "Norm (pcs/hour)",
+    "uploadTemplate": "Upload template",
+    "createProduct": "Create product",
+    "editProduct": "Edit product",
+    "deleteProduct": "Delete product"
+  },
+  "workstations": {
+    "title": "Workstation Management",
+    "name": "Name",
+    "description": "Description",
+    "isActive": "Active",
+    "createWorkstation": "Create workstation",
+    "editWorkstation": "Edit workstation",
+    "deleteWorkstation": "Delete workstation"
+  },
+  "defectTypes": {
+    "title": "Defect Type Management",
+    "name": "Name",
+    "nameEn": "Name (EN)",
+    "color": "Color",
+    "severity": "Severity",
+    "createDefectType": "Create defect type",
+    "editDefectType": "Edit defect type",
+    "deleteDefectType": "Delete defect type"
+  },
+  "sessions": {
+    "title": "Session Overview",
+    "product": "Product",
+    "workstation": "Workstation",
+    "user": "User",
+    "status": "Status",
+    "startedAt": "Started at",
+    "endedAt": "Ended at",
+    "itemsCount": "Items count",
+    "defectsCount": "Defects count",
+    "statuses": {
+      "OPEN": "In progress",
+      "PAUSED": "Paused",
+      "CLOSED": "Closed"
+    }
+  },
+  "board": {
+    "title": "Dashboard & Analytics",
+    "heatmap": "Defect Map",
+    "kpi": "KPI Metrics",
+    "topDefects": "Top Defects",
+    "selectProduct": "Select product",
+    "selectPeriod": "Period",
+    "periods": {
+      "7days": "Last 7 days",
+      "30days": "Last 30 days",
+      "90days": "Last 90 days",
+      "all": "All time"
+    },
+    "metrics": {
+      "totalInspected": "Inspected",
+      "defectiveItems": "Defective items",
+      "defectRate": "Defect rate",
+      "trend": "Trend"
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Invalid email",
+    "minLength": "Minimum length is {{min}} characters",
+    "maxLength": "Maximum length is {{max}} characters"
+  }
+}
