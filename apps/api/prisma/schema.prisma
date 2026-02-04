@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum Role {
+  ADMIN
+  INSPECTOR
+  QUALITY
+}
+
+enum SessionStatus {
+  OPEN
+  PAUSED
+  CLOSED
+}
+
+enum ItemStatus {
+  OK
+  DEFECTIVE
+}
+
+// ============================================
+// User Model
+// ============================================
+
+model User {
+  id                   String       @id @default(cuid())
+  email                String       @unique
+  passwordHash         String
+  name                 String
+  role                 Role         @default(INSPECTOR)
+  defaultWorkstation   Workstation? @relation("DefaultWorkstation", fields: [defaultWorkstationId], references: [id])
+  defaultWorkstationId String?
+  workstations         Workstation[] @relation("UserWorkstations")
+  sessions             Session[]
+  auditLogs            AuditLog[]
+  refreshTokens        RefreshToken[]
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+// ============================================
+// Refresh Token Model (for JWT refresh)
+// ============================================
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
+
+// ============================================
+// Workstation Model
+// ============================================
+
+model Workstation {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean   @default(true)
+  users       User[]    @relation("UserWorkstations")
+  defaultFor  User[]    @relation("DefaultWorkstation")
+  sessions    Session[]
+  createdAt   DateTime  @default(now())
+
+  @@index([isActive])
+}
+
+// ============================================
+// Product Model
+// ============================================
+
+model Product {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  name           String
+  nameEn         String?
+  templateImage  String    @default("")
+  templateWidth  Int       @default(800)
+  templateHeight Int       @default(600)
+  normPerHour    Int       @default(60)
+  isActive       Boolean   @default(true)
+  sessions       Session[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+}
+
+// ============================================
+// DefectType Model
+// ============================================
+
+model DefectType {
+  id        String   @id @default(cuid())
+  name      String
+  nameEn    String?
+  color     String   @default("#FF0000")
+  severity  Int      @default(1)
+  isActive  Boolean  @default(true)
+  defects   Defect[]
+  createdAt DateTime @default(now())
+
+  @@index([isActive])
+}
+
+// ============================================
+// Session Model (Inspection Session)
+// ============================================
+
+model Session {
+  id            String        @id @default(cuid())
+  product       Product       @relation(fields: [productId], references: [id])
+  productId     String
+  workstation   Workstation   @relation(fields: [workstationId], references: [id])
+  workstationId String
+  user          User          @relation(fields: [userId], references: [id])
+  userId        String
+  batch         String?
+  sapMaterial   String?
+  sapBatch      String?
+  status        SessionStatus @default(OPEN)
+  startedAt     DateTime      @default(now())
+  endedAt       DateTime?
+  activeTime    Int           @default(0)
+  items         Item[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([productId])
+  @@index([workstationId])
+  @@index([userId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+// ============================================
+// Item Model (Individual piece in session)
+// ============================================
+
+model Item {
+  id        String     @id @default(cuid())
+  session   Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  sequence  Int
+  status    ItemStatus @default(OK)
+  defects   Defect[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([sessionId, sequence])
+  @@index([sessionId])
+  @@index([status])
+}
+
+// ============================================
+// Defect Model
+// ============================================
+
+model Defect {
+  id           String        @id @default(cuid())
+  item         Item          @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId       String
+  defectType   DefectType    @relation(fields: [defectTypeId], references: [id])
+  defectTypeId String
+  positionX    Float
+  positionY    Float
+  severity     Int?
+  notes        String?
+  photos       DefectPhoto[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([itemId])
+  @@index([defectTypeId])
+}
+
+// ============================================
+// DefectPhoto Model
+// ============================================
+
+model DefectPhoto {
+  id            String   @id @default(cuid())
+  defect        Defect   @relation(fields: [defectId], references: [id], onDelete: Cascade)
+  defectId      String
+  originalPath  String
+  thumbnailPath String
+  createdAt     DateTime @default(now())
+
+  @@index([defectId])
+}
+
+// ============================================
+// AuditLog Model
+// ============================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  action     String
+  entityType String
+  entityId   String
+  changes    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([createdAt])
+}
