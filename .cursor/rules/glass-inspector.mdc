@@ -1,0 +1,46 @@
+---
+description: Glass Inspector - Automotive glass defect mapping application
+globs: **/*
+alwaysApply: true
+---
+
+# Glass Inspector Project Rules
+
+## Project Overview
+This is a PWA for mapping defects on automotive glass during manufacturing inspection. Built with React + Fastify monorepo.
+
+## Key Context
+- **Read `docs/PROJECT_CONTEXT.md`** for full project documentation
+- Monorepo managed by Turborepo with pnpm
+- Shared types/validators in `packages/shared`
+
+## Tech Stack Quick Reference
+- Frontend: React 18, Vite, TypeScript, TailwindCSS, Zustand, TanStack Query
+- Backend: Fastify, Prisma, PostgreSQL
+- Offline: Dexie.js (IndexedDB), Workbox Service Worker
+
+## Code Style
+- Use TypeScript strict mode
+- Use Zod for validation (schemas in `packages/shared/src/validators`)
+- UI components follow shadcn/ui patterns (Radix UI + Tailwind)
+- Use `@/` path alias for imports in web app
+- All text must support i18n (use `useTranslation` hook)
+
+## Commands
+```bash
+pnpm install          # Install dependencies
+pnpm docker:dev       # Start PostgreSQL, Redis, MinIO
+pnpm db:generate      # Generate Prisma client
+pnpm db:push          # Push schema to DB
+pnpm dev              # Start dev servers
+```
+
+## Test Accounts
+- Admin: admin@glass-inspector.local / admin123
+- Inspector: inspector@glass-inspector.local / inspector123
+- Quality: quality@glass-inspector.local / quality123
+
+## Important Files
+- `apps/api/prisma/schema.prisma` - Database schema
+- `apps/web/src/components/inspection/DefectCanvas.tsx` - Main defect mapping canvas
+- `packages/shared/src/types/index.ts` - All TypeScript interfaces
