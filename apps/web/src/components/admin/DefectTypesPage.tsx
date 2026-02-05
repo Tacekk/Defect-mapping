@@ -36,7 +36,6 @@ export function DefectTypesPage() {
   const [editingDefectType, setEditingDefectType] = useState<DefectType | null>(null);
 
   const { register, handleSubmit, reset, setValue, watch } = useForm<DefectTypeFormData>();
-  const selectedColor = watch('color') || '#EF4444';
   const selectedSeverity = watch('severity');
 
   const { data: defectTypes, isLoading } = useQuery({

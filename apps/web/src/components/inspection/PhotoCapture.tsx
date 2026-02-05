@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Camera, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { compressImage, getImagePreview } from '@/lib/imageCompression';
 import { api } from '@/lib/api';
 import { toast } from '@/components/ui/toaster';

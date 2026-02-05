@@ -1,4 +1,4 @@
-import { WifiOff, Cloud, CloudOff, Loader2 } from 'lucide-react';
+import { WifiOff, Cloud, Loader2 } from 'lucide-react';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { cn } from '@/lib/utils';
 

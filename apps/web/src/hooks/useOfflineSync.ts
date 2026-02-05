@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { db, SyncOperation, generateLocalId } from '@/db';
+import { db, SyncOperation } from '@/db';
 import { api } from '@/lib/api';
 
 export function useOnlineStatus() {

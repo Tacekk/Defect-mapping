@@ -29,7 +29,7 @@ export function UsersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<UserFormData>();
+  const { register, handleSubmit, reset, setValue, watch } = useForm<UserFormData>();
   const selectedRole = watch('role');
 
   const { data: users, isLoading } = useQuery({

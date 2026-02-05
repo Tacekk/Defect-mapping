@@ -377,7 +377,7 @@ const sessionsRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post('/items/:itemId/defects', { preHandler: requireInspector }, async (request, reply) => {
     try {
       const { itemId } = request.params as { itemId: string };
-      const data = createDefectSchema.parse({ ...request.body, itemId });
+      const data = createDefectSchema.parse({ ...(request.body as object), itemId });
 
       const item = await prisma.item.findUnique({ where: { id: itemId } });
       if (!item) {

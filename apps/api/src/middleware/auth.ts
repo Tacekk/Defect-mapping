@@ -4,8 +4,9 @@ import { UnauthorizedError, ForbiddenError } from '../utils/errors.js';
 
 export interface JWTPayload {
   userId: string;
-  email: string;
-  role: Role;
+  email?: string;
+  role?: Role;
+  tokenType?: 'refresh';
 }
 
 declare module '@fastify/jwt' {
@@ -31,7 +32,7 @@ export function requireRole(...roles: Role[]) {
     await authenticate(request, reply);
     
     const userRole = request.user.role;
-    if (!roles.includes(userRole)) {
+    if (!userRole || !roles.includes(userRole)) {
       throw new ForbiddenError('Insufficient permissions');
     }
   };

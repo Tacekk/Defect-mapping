@@ -15,7 +15,7 @@ interface DefectCanvasProps {
 export function DefectCanvas({
   product,
   defects,
-  defectTypes,
+  defectTypes: _defectTypes,
   onDefectAdd,
   onDefectClick,
   readonly = false,

@@ -64,7 +64,7 @@ export function DefectParetoChart({ data }: DefectParetoChartProps) {
             layout="vertical"
             align="right"
             verticalAlign="middle"
-            formatter={(value, entry: any) => (
+            formatter={(value) => (
               <span className="text-sm">{value}</span>
             )}
           />

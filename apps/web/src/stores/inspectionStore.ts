@@ -1,22 +1,24 @@
 import { create } from 'zustand';
-import type { Session, Item, Product, Workstation, DefectType } from '@glass-inspector/shared';
+import type { Session, Item, ItemWithDefects, Product, Workstation, DefectType } from '@glass-inspector/shared';
+
+type InspectionItem = Item | ItemWithDefects;
 
 interface InspectionState {
   currentSession: Session | null;
-  currentItem: Item | null;
+  currentItem: InspectionItem | null;
   currentItemIndex: number;
-  items: Item[];
+  items: InspectionItem[];
   selectedWorkstation: Workstation | null;
   selectedProduct: Product | null;
   defectTypes: DefectType[];
   isTimerRunning: boolean;
   activeTime: number;
   setCurrentSession: (session: Session | null) => void;
-  setCurrentItem: (item: Item | null) => void;
+  setCurrentItem: (item: InspectionItem | null) => void;
   setCurrentItemIndex: (index: number) => void;
-  setItems: (items: Item[]) => void;
-  addItem: (item: Item) => void;
-  updateItem: (item: Item) => void;
+  setItems: (items: InspectionItem[]) => void;
+  addItem: (item: InspectionItem) => void;
+  updateItem: (item: InspectionItem) => void;
   setSelectedWorkstation: (workstation: Workstation | null) => void;
   setSelectedProduct: (product: Product | null) => void;
   setDefectTypes: (types: DefectType[]) => void;

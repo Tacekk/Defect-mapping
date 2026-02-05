@@ -16,7 +16,8 @@ import { useInspectionStore } from '@/stores/inspectionStore';
 import { useAuthStore } from '@/stores/authStore';
 import { api } from '@/lib/api';
 import { formatTime } from '@/lib/utils';
-import type { Product, Workstation, DefectType, Session, Item, DefectMarker, Position, DefectWithType, DefectPhoto } from '@glass-inspector/shared';
+import { ItemStatus } from '@glass-inspector/shared';
+import type { Product, Workstation, DefectType, Session, Item, ItemWithDefects, DefectMarker, Position, DefectWithType, DefectPhoto } from '@glass-inspector/shared';
 
 export function InspectionPage() {
   const { t } = useTranslation();
@@ -35,7 +36,6 @@ export function InspectionPage() {
     setCurrentSession,
     setCurrentItem,
     setCurrentItemIndex,
-    setItems,
     addItem,
     updateItem,
     setSelectedWorkstation,
@@ -261,10 +261,10 @@ export function InspectionPage() {
     onSuccess: (defect) => {
       if (defect && currentItem) {
         // Update current item with new defect
-        const updatedItem = {
+        const updatedItem: ItemWithDefects = {
           ...currentItem,
-          status: 'DEFECTIVE' as const,
-          defects: [...((currentItem as any).defects || []), defect],
+          status: ItemStatus.DEFECTIVE,
+          defects: [...(('defects' in currentItem ? currentItem.defects : []) || []), defect],
         };
         updateItem(updatedItem);
         setCurrentDefects([
@@ -292,10 +292,11 @@ export function InspectionPage() {
     onSuccess: (_, defectId) => {
       setCurrentDefects((prev) => prev.filter((d) => d.id !== defectId));
       if (currentItem) {
-        const updatedDefects = ((currentItem as any).defects || []).filter((d: any) => d.id !== defectId);
-        const updatedItem = {
+        const existingDefects = 'defects' in currentItem ? currentItem.defects : [];
+        const updatedDefects = (existingDefects || []).filter((d) => d.id !== defectId);
+        const updatedItem: ItemWithDefects = {
           ...currentItem,
-          status: updatedDefects.length === 0 ? 'OK' : 'DEFECTIVE',
+          status: updatedDefects.length === 0 ? ItemStatus.OK : ItemStatus.DEFECTIVE,
           defects: updatedDefects,
         };
         updateItem(updatedItem);
@@ -319,7 +320,7 @@ export function InspectionPage() {
     mutationFn: async ({ defectId, data }: { defectId: string; data: { defectTypeId?: string; severity?: number; notes?: string } }) => {
       return api.patch(`/sessions/defects/${defectId}`, data);
     },
-    onSuccess: (response, { defectId, data }) => {
+    onSuccess: (_, { defectId, data }) => {
       // Update local state
       if (data.defectTypeId && currentItem) {
         const defectType = defectTypes.find((dt) => dt.id === data.defectTypeId);

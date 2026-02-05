@@ -44,7 +44,7 @@ export function BoardPage() {
   });
 
   // Fetch KPI metrics
-  const { data: kpiData, isLoading: isLoadingKpi } = useQuery({
+  const { data: kpiData } = useQuery({
     queryKey: ['kpi', selectedProductId, selectedPeriod],
     queryFn: async () => {
       const params = new URLSearchParams();

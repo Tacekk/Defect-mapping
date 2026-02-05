@@ -26,7 +26,7 @@ export function WorkstationsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingWorkstation, setEditingWorkstation] = useState<Workstation | null>(null);
 
-  const { register, handleSubmit, reset, setValue, watch } = useForm<WorkstationFormData>();
+  const { register, handleSubmit, reset } = useForm<WorkstationFormData>();
 
   const { data: workstations, isLoading } = useQuery({
     queryKey: ['workstations'],

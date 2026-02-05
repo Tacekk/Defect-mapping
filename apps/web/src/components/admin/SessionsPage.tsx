@@ -11,7 +11,7 @@ import { toast } from '@/components/ui/toaster';
 import { SessionDetailDialog } from './SessionDetailDialog';
 import { api } from '@/lib/api';
 import { formatDateTime } from '@/lib/utils';
-import type { Session, SessionWithRelations, Product, Workstation, PaginatedResponse } from '@glass-inspector/shared';
+import type { Session, SessionWithRelations, Product, PaginatedResponse } from '@glass-inspector/shared';
 
 export function SessionsPage() {
   const { t, i18n } = useTranslation();

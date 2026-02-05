@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { prisma } from '../utils/prisma.js';
 import { config } from '../config.js';
 import { UnauthorizedError, NotFoundError, ConflictError } from '../utils/errors.js';
-import { LoginInput, CreateUserInput } from '@glass-inspector/shared';
+import { LoginInput, CreateUserInput, Role } from '@glass-inspector/shared';
 import { logger } from '../utils/logger.js';
 
 const SALT_ROUNDS = 12;
@@ -42,7 +42,7 @@ export async function login(
     {
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as Role,
     },
     { expiresIn: config.jwt.expiresIn }
   );
@@ -50,7 +50,7 @@ export async function login(
   const refreshToken = fastify.jwt.sign(
     {
       userId: user.id,
-      type: 'refresh',
+      tokenType: 'refresh' as const,
     },
     { 
       expiresIn: config.jwt.refreshExpiresIn,
@@ -114,7 +114,7 @@ export async function refreshAccessToken(
     {
       userId: storedToken.user.id,
       email: storedToken.user.email,
-      role: storedToken.user.role,
+      role: storedToken.user.role as Role,
     },
     { expiresIn: config.jwt.expiresIn }
   );
@@ -122,7 +122,7 @@ export async function refreshAccessToken(
   const newRefreshToken = fastify.jwt.sign(
     {
       userId: storedToken.user.id,
-      type: 'refresh',
+      tokenType: 'refresh' as const,
     },
     { 
       expiresIn: config.jwt.refreshExpiresIn,
