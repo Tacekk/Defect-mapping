@@ -142,6 +142,137 @@ const photosRoutes: FastifyPluginAsync = async (fastify) => {
       return handleError(error, reply);
     }
   });
+
+  // Get all photos with pagination (for admin)
+  fastify.get('/', { preHandler: authenticate }, async (request, reply) => {
+    try {
+      const query = request.query as {
+        page?: string;
+        pageSize?: string;
+        productId?: string;
+      };
+
+      const page = parseInt(query.page || '1', 10);
+      const pageSize = parseInt(query.pageSize || '24', 10);
+
+      const whereClause: any = {};
+      if (query.productId) {
+        whereClause.defect = {
+          item: {
+            session: {
+              productId: query.productId,
+            },
+          },
+        };
+      }
+
+      const [photos, total] = await Promise.all([
+        prisma.defectPhoto.findMany({
+          where: whereClause,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          include: {
+            defect: {
+              include: {
+                defectType: true,
+                item: {
+                  include: {
+                    session: {
+                      include: {
+                        product: true,
+                        user: {
+                          select: { id: true, name: true },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }),
+        prisma.defectPhoto.count({ where: whereClause }),
+      ]);
+
+      return reply.send({
+        success: true,
+        data: {
+          data: photos.map((photo) => ({
+            ...photo,
+            defectTypeName: photo.defect.defectType.name,
+            defectTypeNameEn: photo.defect.defectType.nameEn,
+            defectColor: photo.defect.defectType.color,
+            productCode: photo.defect.item.session.product.code,
+            productName: photo.defect.item.session.product.name,
+            userName: photo.defect.item.session.user.name,
+            sessionId: photo.defect.item.session.id,
+          })),
+          total,
+          page,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      });
+    } catch (error) {
+      return handleError(error, reply);
+    }
+  });
+
+  // Get recent photos (for board/dashboard)
+  fastify.get('/recent', { preHandler: authenticate }, async (request, reply) => {
+    try {
+      const query = request.query as { limit?: string; productId?: string };
+      const limit = Math.min(parseInt(query.limit || '12', 10), 50);
+
+      const whereClause: any = {};
+      if (query.productId) {
+        whereClause.defect = {
+          item: {
+            session: {
+              productId: query.productId,
+            },
+          },
+        };
+      }
+
+      const photos = await prisma.defectPhoto.findMany({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        include: {
+          defect: {
+            include: {
+              defectType: true,
+              item: {
+                include: {
+                  session: {
+                    include: {
+                      product: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return reply.send({
+        success: true,
+        data: photos.map((photo) => ({
+          ...photo,
+          defectTypeName: photo.defect.defectType.name,
+          defectTypeNameEn: photo.defect.defectType.nameEn,
+          defectColor: photo.defect.defectType.color,
+          productCode: photo.defect.item.session.product.code,
+          productName: photo.defect.item.session.product.name,
+        })),
+      });
+    } catch (error) {
+      return handleError(error, reply);
+    }
+  });
 };
 
 export default photosRoutes;

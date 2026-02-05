@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { Trash2, ZoomIn, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -15,6 +16,7 @@ interface PhotoGalleryProps {
 
 export function PhotoGallery({ photos, onPhotoDeleted, readonly = false }: PhotoGalleryProps) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [selectedPhoto, setSelectedPhoto] = useState<DefectPhoto | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
@@ -27,6 +29,9 @@ export function PhotoGallery({ photos, onPhotoDeleted, readonly = false }: Photo
     try {
       await api.delete(`/photos/${photo.id}`);
       onPhotoDeleted?.(photo.id);
+      // Invalidate photo-related caches
+      queryClient.invalidateQueries({ queryKey: ['recentPhotos'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-photos'] });
       toast({ title: t('common.success'), description: 'Photo deleted' });
     } catch (error) {
       toast({ title: t('common.error'), description: 'Failed to delete photo', variant: 'destructive' });

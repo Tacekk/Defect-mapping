@@ -1,12 +1,13 @@
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Users, Package, Monitor, AlertTriangle, ClipboardList, History } from 'lucide-react';
+import { Users, Package, Monitor, AlertTriangle, ClipboardList, History, Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UsersPage } from '@/components/admin/UsersPage';
 import { ProductsPage } from '@/components/admin/ProductsPage';
 import { WorkstationsPage } from '@/components/admin/WorkstationsPage';
 import { DefectTypesPage } from '@/components/admin/DefectTypesPage';
 import { SessionsPage } from '@/components/admin/SessionsPage';
+import { PhotosPage } from '@/components/admin/PhotosPage';
 import { AuditLogsPage } from '@/components/admin/AuditLogsPage';
 
 export function AdminPage() {
@@ -18,6 +19,7 @@ export function AdminPage() {
     { to: '/admin/workstations', icon: Monitor, label: t('admin.workstations') },
     { to: '/admin/defect-types', icon: AlertTriangle, label: t('admin.defectTypes') },
     { to: '/admin/sessions', icon: ClipboardList, label: t('admin.sessions') },
+    { to: '/admin/photos', icon: Camera, label: t('admin.photos') },
     { to: '/admin/audit-logs', icon: History, label: t('admin.auditLogs') },
   ];
 
@@ -54,6 +56,7 @@ export function AdminPage() {
             <Route path="workstations" element={<WorkstationsPage />} />
             <Route path="defect-types" element={<DefectTypesPage />} />
             <Route path="sessions" element={<SessionsPage />} />
+            <Route path="photos" element={<PhotosPage />} />
             <Route path="audit-logs" element={<AuditLogsPage />} />
           </Routes>
         </div>

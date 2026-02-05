@@ -1,21 +1,21 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Trash2, Eye, Camera, CameraOff } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Loader2, Eye, Camera, CameraOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { toast } from '@/components/ui/toaster';
-import { SessionDetailDialog } from './SessionDetailDialog';
+import { SessionDetailDialog } from '@/components/admin/SessionDetailDialog';
 import { api } from '@/lib/api';
 import { formatDateTime } from '@/lib/utils';
-import type { Session, SessionWithRelations, Product, Workstation, PaginatedResponse } from '@glass-inspector/shared';
+import { useAuthStore } from '@/stores/authStore';
+import type { Session, SessionWithRelations, Product, PaginatedResponse } from '@glass-inspector/shared';
 
-export function SessionsPage() {
+export function MySessionsPage() {
   const { t, i18n } = useTranslation();
-  const queryClient = useQueryClient();
+  const currentUser = useAuthStore((state) => state.user);
   const [productFilter, setProductFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [page, setPage] = useState(1);
@@ -31,9 +31,11 @@ export function SessionsPage() {
   });
 
   const { data: sessionsData, isLoading } = useQuery({
-    queryKey: ['sessions', productFilter, statusFilter, page],
+    queryKey: ['my-sessions', currentUser?.id, productFilter, statusFilter, page],
     queryFn: async () => {
+      if (!currentUser?.id) return null;
       const params = new URLSearchParams();
+      params.append('userId', currentUser.id);
       if (productFilter) params.append('productId', productFilter);
       if (statusFilter) params.append('status', statusFilter);
       params.append('page', String(page));
@@ -41,19 +43,7 @@ export function SessionsPage() {
       const response = await api.get<PaginatedResponse<Session>>(`/sessions?${params}`);
       return response.data;
     },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return api.delete(`/sessions/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      toast({ title: t('common.success'), description: 'Session deleted' });
-    },
-    onError: () => {
-      toast({ title: t('common.error'), description: 'Failed to delete session', variant: 'destructive' });
-    },
+    enabled: !!currentUser?.id,
   });
 
   const getStatusBadgeVariant = (status: string) => {
@@ -68,7 +58,7 @@ export function SessionsPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('sessions.title')}</CardTitle>
+        <CardTitle>{t('sessions.mySessions')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-4">
@@ -77,7 +67,7 @@ export function SessionsPage() {
               <SelectValue placeholder={t('sessions.product')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All products</SelectItem>
+              <SelectItem value="all">{t('common.all')}</SelectItem>
               {products?.map((product) => (
                 <SelectItem key={product.id} value={product.id}>
                   {product.code}
@@ -91,7 +81,7 @@ export function SessionsPage() {
               <SelectValue placeholder={t('sessions.status')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="all">{t('common.all')}</SelectItem>
               <SelectItem value="OPEN">{t('sessions.statuses.OPEN')}</SelectItem>
               <SelectItem value="PAUSED">{t('sessions.statuses.PAUSED')}</SelectItem>
               <SelectItem value="CLOSED">{t('sessions.statuses.CLOSED')}</SelectItem>
@@ -110,7 +100,6 @@ export function SessionsPage() {
                 <TableRow>
                   <TableHead>{t('sessions.product')}</TableHead>
                   <TableHead>{t('sessions.workstation')}</TableHead>
-                  <TableHead>{t('sessions.user')}</TableHead>
                   <TableHead>{t('sessions.status')}</TableHead>
                   <TableHead>{t('sessions.startedAt')}</TableHead>
                   <TableHead className="text-center">{t('sessions.itemsCount')}</TableHead>
@@ -121,13 +110,19 @@ export function SessionsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {sessionsData?.data?.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                      {t('common.noData')}
+                    </TableCell>
+                  </TableRow>
+                )}
                 {sessionsData?.data?.map((session: any) => (
                   <TableRow key={session.id}>
                     <TableCell className="font-medium">
                       {session.product?.code}
                     </TableCell>
                     <TableCell>{session.workstation?.name}</TableCell>
-                    <TableCell>{session.user?.name}</TableCell>
                     <TableCell>
                       <Badge variant={getStatusBadgeVariant(session.status)}>
                         {t(`sessions.statuses.${session.status}`)}
@@ -164,17 +159,6 @@ export function SessionsPage() {
                         }}
                       >
                         <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          if (confirm('Are you sure? This will delete all items and defects.')) {
-                            deleteMutation.mutate(session.id);
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>

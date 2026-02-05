@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Play, Pause, Square, Plus, ChevronRight, ChevronLeft, CheckCircle, XCircle } from 'lucide-react';
@@ -11,10 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/toaster';
 import { DefectCanvas } from '@/components/inspection/DefectCanvas';
 import { DefectTypeSelector } from '@/components/inspection/DefectTypeSelector';
+import { DefectDetail } from '@/components/inspection/DefectDetail';
 import { useInspectionStore } from '@/stores/inspectionStore';
+import { useAuthStore } from '@/stores/authStore';
 import { api } from '@/lib/api';
 import { formatTime } from '@/lib/utils';
-import type { Product, Workstation, DefectType, Session, Item, DefectMarker, Position, DefectWithType } from '@glass-inspector/shared';
+import type { Product, Workstation, DefectType, Session, Item, DefectMarker, Position, DefectWithType, DefectPhoto } from '@glass-inspector/shared';
 
 export function InspectionPage() {
   const { t } = useTranslation();
@@ -50,6 +52,11 @@ export function InspectionPage() {
   const [isDefectSelectorOpen, setIsDefectSelectorOpen] = useState(false);
   const [pendingDefectPosition, setPendingDefectPosition] = useState<Position | null>(null);
   const [currentDefects, setCurrentDefects] = useState<DefectMarker[]>([]);
+  const [selectedDefect, setSelectedDefect] = useState<DefectWithType | null>(null);
+  const [isDefectDetailOpen, setIsDefectDetailOpen] = useState(false);
+  
+  const currentUser = useAuthStore((state) => state.user);
+  const sessionTakeoverChecked = useRef(false);
 
   // Timer effect
   useEffect(() => {
@@ -72,6 +79,67 @@ export function InspectionPage() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [isTimerRunning, stopTimer]);
+
+  // Periodically save activeTime to backend (every 30 seconds)
+  useEffect(() => {
+    if (!currentSession || !isTimerRunning) return;
+
+    const saveActiveTime = async () => {
+      try {
+        await api.patch(`/sessions/${currentSession.id}`, { activeTime });
+      } catch (error) {
+        // Silently fail - session might be closed or taken over
+      }
+    };
+
+    const interval = setInterval(saveActiveTime, 30000);
+
+    // Also save when timer stops (paused or visibility change)
+    return () => {
+      clearInterval(interval);
+      // Save on cleanup if session still exists
+      if (currentSession) {
+        saveActiveTime();
+      }
+    };
+  }, [currentSession, isTimerRunning, activeTime]);
+
+  // Session ownership check - detect if session was taken over by another user
+  useEffect(() => {
+    if (!currentSession || !currentUser) return;
+
+    const checkSessionOwnership = async () => {
+      try {
+        const response = await api.get<Session>(`/sessions/${currentSession.id}`);
+        if (response.data && response.data.userId !== currentUser.id) {
+          // Session was taken over by another user
+          if (!sessionTakeoverChecked.current) {
+            sessionTakeoverChecked.current = true;
+            stopTimer();
+            toast({
+              title: t('sessions.takenOver'),
+              description: t('sessions.takenOverDescription'),
+              variant: 'destructive',
+            });
+            reset();
+          }
+        }
+      } catch (error) {
+        // Session might be deleted or closed, ignore
+      }
+    };
+
+    // Check immediately when session starts
+    checkSessionOwnership();
+
+    // Poll every 15 seconds
+    const interval = setInterval(checkSessionOwnership, 15000);
+
+    return () => {
+      clearInterval(interval);
+      sessionTakeoverChecked.current = false;
+    };
+  }, [currentSession, currentUser, reset, stopTimer, t]);
 
   // Fetch workstations
   const { data: workstations } = useQuery({
@@ -222,7 +290,7 @@ export function InspectionPage() {
       return api.delete(`/sessions/defects/${defectId}`);
     },
     onSuccess: (_, defectId) => {
-      setCurrentDefects(currentDefects.filter((d) => d.id !== defectId));
+      setCurrentDefects((prev) => prev.filter((d) => d.id !== defectId));
       if (currentItem) {
         const updatedDefects = ((currentItem as any).defects || []).filter((d: any) => d.id !== defectId);
         const updatedItem = {
@@ -232,6 +300,41 @@ export function InspectionPage() {
         };
         updateItem(updatedItem);
       }
+      setSelectedDefect(null);
+      setIsDefectDetailOpen(false);
+      toast({ title: t('common.success'), description: 'Defect deleted' });
+    },
+    onError: (error: any) => {
+      console.error('Delete defect error:', error);
+      toast({ 
+        title: t('common.error'), 
+        description: error?.message || 'Failed to delete defect', 
+        variant: 'destructive' 
+      });
+    },
+  });
+
+  // Update defect mutation
+  const updateDefectMutation = useMutation({
+    mutationFn: async ({ defectId, data }: { defectId: string; data: { defectTypeId?: string; severity?: number; notes?: string } }) => {
+      return api.patch(`/sessions/defects/${defectId}`, data);
+    },
+    onSuccess: (response, { defectId, data }) => {
+      // Update local state
+      if (data.defectTypeId && currentItem) {
+        const defectType = defectTypes.find((dt) => dt.id === data.defectTypeId);
+        if (defectType) {
+          setCurrentDefects((prev) =>
+            prev.map((d) =>
+              d.id === defectId ? { ...d, defectTypeId: data.defectTypeId!, color: defectType.color } : d
+            )
+          );
+        }
+      }
+      toast({ title: t('common.success'), description: 'Defect updated' });
+    },
+    onError: () => {
+      toast({ title: t('common.error'), description: 'Failed to update defect', variant: 'destructive' });
     },
   });
 
@@ -252,10 +355,31 @@ export function InspectionPage() {
   }, [currentItem, addDefectMutation]);
 
   const handleDefectClick = useCallback((defect: DefectMarker) => {
-    if (confirm('Delete this defect?')) {
-      deleteDefectMutation.mutate(defect.id);
+    // Find the full defect data from currentItem
+    const fullDefect = ((currentItem as any)?.defects || []).find((d: DefectWithType) => d.id === defect.id);
+    if (fullDefect) {
+      setSelectedDefect(fullDefect);
+      setIsDefectDetailOpen(true);
     }
-  }, [deleteDefectMutation]);
+  }, [currentItem]);
+
+  const handlePhotoChange = useCallback((defectId: string, photos: DefectPhoto[]) => {
+    // Update the defect photos in currentItem
+    if (currentItem) {
+      const updatedDefects = ((currentItem as any).defects || []).map((d: DefectWithType) =>
+        d.id === defectId ? { ...d, photos } : d
+      );
+      const updatedItem = {
+        ...currentItem,
+        defects: updatedDefects,
+      };
+      updateItem(updatedItem);
+      // Also update selectedDefect if it's the same defect
+      if (selectedDefect && selectedDefect.id === defectId) {
+        setSelectedDefect({ ...selectedDefect, photos });
+      }
+    }
+  }, [currentItem, selectedDefect, updateItem]);
 
   const handleStartSession = () => {
     if (!selectedProduct || !selectedWorkstation) {
@@ -529,6 +653,24 @@ export function InspectionPage() {
         defectTypes={defectTypes}
         position={pendingDefectPosition}
         onSelect={handleDefectTypeSelect}
+      />
+
+      {/* Defect Detail Dialog */}
+      <DefectDetail
+        defect={selectedDefect}
+        defectTypes={defectTypes}
+        isOpen={isDefectDetailOpen}
+        onClose={() => {
+          setIsDefectDetailOpen(false);
+          setSelectedDefect(null);
+        }}
+        onUpdate={(defectId, data) => {
+          updateDefectMutation.mutate({ defectId, data });
+        }}
+        onDelete={(defectId) => {
+          deleteDefectMutation.mutate(defectId);
+        }}
+        onPhotoChange={handlePhotoChange}
       />
     </div>
   );

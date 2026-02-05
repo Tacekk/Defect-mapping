@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { Stage, Layer, Image as KonvaImage, Circle, Group } from 'react-konva';
+import { Stage, Layer, Image as KonvaImage, Circle, Group, Rect } from 'react-konva';
 import type Konva from 'konva';
 import type { Product, DefectType, DefectMarker, Position } from '@glass-inspector/shared';
 
@@ -166,7 +166,7 @@ export function DefectCanvas({
           ) : (
             <Group>
               {/* Placeholder rectangle when no image */}
-              <Konva.Rect
+              <Rect
                 x={imageDims.x}
                 y={imageDims.y}
                 width={imageDims.width}

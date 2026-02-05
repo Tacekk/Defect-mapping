@@ -26,16 +26,22 @@ interface InspectionState {
   reset: () => void;
 }
 
-const initialState = {
+// Session-specific state that gets reset when ending a session
+const sessionState = {
   currentSession: null,
   currentItem: null,
   currentItemIndex: 0,
   items: [],
-  selectedWorkstation: null,
-  selectedProduct: null,
-  defectTypes: [],
   isTimerRunning: false,
   activeTime: 0,
+};
+
+// Full initial state including app-wide data
+const initialState = {
+  ...sessionState,
+  selectedWorkstation: null,
+  selectedProduct: null,
+  defectTypes: [],  // App-wide, not reset on session end
 };
 
 export const useInspectionStore = create<InspectionState>((set) => ({
@@ -62,5 +68,5 @@ export const useInspectionStore = create<InspectionState>((set) => ({
   startTimer: () => set({ isTimerRunning: true }),
   stopTimer: () => set({ isTimerRunning: false }),
   updateActiveTime: (time) => set({ activeTime: time }),
-  reset: () => set(initialState),
+  reset: () => set(sessionState),  // Only reset session-specific state, keep defectTypes
 }));

@@ -1,19 +1,29 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, BarChart3, Camera, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { DefectHeatmap } from '@/components/board/DefectHeatmap';
 import { DefectParetoChart } from '@/components/board/DefectParetoChart';
 import { api } from '@/lib/api';
 import { formatPercentage } from '@/lib/utils';
-import type { Product, DefectType, KPIMetrics, HeatmapResponse } from '@glass-inspector/shared';
+import type { Product, DefectType, KPIMetrics, HeatmapResponse, DefectPhoto } from '@glass-inspector/shared';
+
+interface RecentPhoto extends DefectPhoto {
+  defectTypeName: string;
+  defectTypeNameEn?: string;
+  defectColor: string;
+  productCode: string;
+  productName: string;
+}
 
 export function BoardPage() {
   const { t, i18n } = useTranslation();
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('30days');
+  const [selectedPhoto, setSelectedPhoto] = useState<RecentPhoto | null>(null);
 
   // Fetch products
   const { data: products } = useQuery({
@@ -75,6 +85,18 @@ export function BoardPage() {
     enabled: !!selectedProductId,
   });
 
+  // Fetch recent photos
+  const { data: recentPhotos } = useQuery({
+    queryKey: ['recentPhotos', selectedProductId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append('limit', '8');
+      if (selectedProductId) params.append('productId', selectedProductId);
+      const response = await api.get<RecentPhoto[]>(`/photos/recent?${params}`);
+      return response.data || [];
+    },
+  });
+
   const TrendIcon = ({ trend }: { trend: number }) => {
     if (trend > 0.01) return <TrendingUp className="h-4 w-4 text-destructive" />;
     if (trend < -0.01) return <TrendingDown className="h-4 w-4 text-success" />;
@@ -87,12 +109,12 @@ export function BoardPage() {
         <h1 className="text-3xl font-bold">{t('board.title')}</h1>
 
         <div className="flex flex-wrap gap-4">
-          <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+          <Select value={selectedProductId || 'all'} onValueChange={(v) => setSelectedProductId(v === 'all' ? '' : v)}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder={t('board.selectProduct')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All products</SelectItem>
+              <SelectItem value="all">All products</SelectItem>
               {products?.map((product) => (
                 <SelectItem key={product.id} value={product.id}>
                   {product.code} - {product.name}
@@ -185,16 +207,16 @@ export function BoardPage() {
         </Card>
       </div>
 
-      {/* Heatmap and Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* Heatmap, Photos and Charts */}
+      <div className="grid gap-6 lg:grid-cols-3">
         <Card>
-          <CardHeader>
-            <CardTitle>{t('board.heatmap')}</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">{t('board.heatmap')}</CardTitle>
           </CardHeader>
           <CardContent>
             {!selectedProductId ? (
-              <div className="flex items-center justify-center h-[400px] bg-muted rounded-lg">
-                <p className="text-muted-foreground">Select a product to view heatmap</p>
+              <div className="flex items-center justify-center h-[280px] bg-muted rounded-lg">
+                <p className="text-muted-foreground text-sm">Select a product to view heatmap</p>
               </div>
             ) : (
               <DefectHeatmap
@@ -207,14 +229,93 @@ export function BoardPage() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>{t('board.topDefects')}</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Camera className="h-4 w-4" />
+              {t('board.recentPhotos') || 'Recent Photos'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentPhotos && recentPhotos.length > 0 ? (
+              <div className="grid grid-cols-4 gap-2">
+                {recentPhotos.map((photo) => (
+                  <div
+                    key={photo.id}
+                    className="relative aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer group"
+                    onClick={() => setSelectedPhoto(photo)}
+                  >
+                    <img
+                      src={photo.thumbnailPath}
+                      alt="Defect photo"
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div
+                      className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full border border-white/50"
+                      style={{ backgroundColor: photo.defectColor }}
+                      title={i18n.language === 'en' && photo.defectTypeNameEn ? photo.defectTypeNameEn : photo.defectTypeName}
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="text-white text-xs font-medium truncate px-1">
+                        {photo.productCode}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-[280px] bg-muted rounded-lg">
+                <p className="text-muted-foreground text-sm">{t('board.noPhotos') || 'No photos yet'}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">{t('board.topDefects')}</CardTitle>
           </CardHeader>
           <CardContent>
             <DefectParetoChart data={kpiData?.topDefectTypes} />
           </CardContent>
         </Card>
       </div>
+
+      {/* Fullscreen photo view */}
+      {selectedPhoto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="relative">
+            <img
+              src={selectedPhoto.originalPath}
+              alt="Defect photo"
+              className="max-w-[90vw] max-h-[85vh] object-contain"
+            />
+            <div className="absolute bottom-4 left-4 bg-black/60 text-white px-3 py-2 rounded-lg text-sm">
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: selectedPhoto.defectColor }}
+                />
+                <span>{i18n.language === 'en' && selectedPhoto.defectTypeNameEn ? selectedPhoto.defectTypeNameEn : selectedPhoto.defectTypeName}</span>
+              </div>
+              <div className="text-xs text-white/70 mt-1">
+                {selectedPhoto.productCode} - {selectedPhoto.productName}
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 text-white hover:bg-white/20"
+            onClick={() => setSelectedPhoto(null)}
+          >
+            <X className="h-6 w-6" />
+          </Button>
+        </div>
+      )}
 
       {/* Top Defects Table */}
       <Card>

@@ -2,12 +2,14 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
 import { Toaster } from './components/ui/toaster';
 import { Layout } from './components/ui/layout';
+import { OfflineIndicator } from './components/ui/offline-indicator';
 
 // Pages
 import { LoginPage } from './pages/Login';
 import { InspectionPage } from './pages/Inspection';
 import { AdminPage } from './pages/Admin';
 import { BoardPage } from './pages/Board';
+import { MySessionsPage } from './pages/MySessions';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -34,6 +36,7 @@ function App() {
         >
           <Route index element={<Navigate to="/inspection" replace />} />
           <Route path="inspection" element={<InspectionPage />} />
+          <Route path="my-sessions" element={<MySessionsPage />} />
           <Route path="admin/*" element={<AdminPage />} />
           <Route path="board" element={<BoardPage />} />
         </Route>

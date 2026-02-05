@@ -29,9 +29,9 @@ class ApiClient {
     return headers;
   }
 
-  private async handleResponse<T>(response: Response): Promise<T> {
-    if (response.status === 401) {
-      // Try to refresh token
+  private async handleResponse<T>(response: Response, skipAuth: boolean = false): Promise<T> {
+    if (response.status === 401 && !skipAuth) {
+      // Try to refresh token (only for authenticated requests)
       const refreshed = await this.refreshToken();
       if (!refreshed) {
         useAuthStore.getState().logout();
@@ -85,7 +85,7 @@ class ApiClient {
       method: 'GET',
       headers,
     });
-    return this.handleResponse<ApiResponse<T>>(response);
+    return this.handleResponse<ApiResponse<T>>(response, options?.skipAuth);
   }
 
   async post<T>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<ApiResponse<T>> {
@@ -96,7 +96,7 @@ class ApiClient {
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
-    return this.handleResponse<ApiResponse<T>>(response);
+    return this.handleResponse<ApiResponse<T>>(response, options?.skipAuth);
   }
 
   async put<T>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<ApiResponse<T>> {
@@ -107,7 +107,7 @@ class ApiClient {
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
-    return this.handleResponse<ApiResponse<T>>(response);
+    return this.handleResponse<ApiResponse<T>>(response, options?.skipAuth);
   }
 
   async patch<T>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<ApiResponse<T>> {
@@ -118,17 +118,22 @@ class ApiClient {
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
-    return this.handleResponse<ApiResponse<T>>(response);
+    return this.handleResponse<ApiResponse<T>>(response, options?.skipAuth);
   }
 
   async delete<T>(endpoint: string, options?: RequestOptions): Promise<ApiResponse<T>> {
-    const headers = await this.getHeaders(options?.skipAuth);
+    const accessToken = options?.skipAuth ? null : useAuthStore.getState().accessToken;
+    const headers: HeadersInit = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+    // Don't set Content-Type for DELETE requests without body
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       method: 'DELETE',
       headers,
     });
-    return this.handleResponse<ApiResponse<T>>(response);
+    return this.handleResponse<ApiResponse<T>>(response, options?.skipAuth);
   }
 
   async uploadFile<T>(

@@ -20,7 +20,8 @@
     "no": "Ne",
     "back": "Zpět",
     "next": "Další",
-    "previous": "Předchozí"
+    "previous": "Předchozí",
+    "all": "Vše"
   },
   "auth": {
     "login": "Přihlásit se",
@@ -34,6 +35,7 @@
   },
   "nav": {
     "inspection": "Kontrola",
+    "mySessions": "Moje kontroly",
     "admin": "Administrace",
     "board": "Přehledy",
     "settings": "Nastavení"
@@ -79,7 +81,16 @@
     "workstations": "Pracoviště",
     "defectTypes": "Typy vad",
     "sessions": "Kontroly",
+    "photos": "Fotografie",
     "auditLogs": "Audit log"
+  },
+  "photos": {
+    "title": "Správa fotografií",
+    "noPhotos": "Žádné fotografie",
+    "deleted": "Fotografie byla smazána",
+    "deleteFailed": "Nepodařilo se smazat fotografii",
+    "deleteConfirm": "Opravdu chcete smazat tuto fotografii?",
+    "totalCount": "Celkem: {{count}} fotografií"
   },
   "users": {
     "title": "Správa uživatelů",
@@ -130,6 +141,7 @@
   },
   "sessions": {
     "title": "Přehled kontrol",
+    "mySessions": "Moje kontroly",
     "product": "Produkt",
     "workstation": "Pracoviště",
     "user": "Uživatel",
@@ -138,6 +150,16 @@
     "endedAt": "Ukončeno",
     "itemsCount": "Počet kusů",
     "defectsCount": "Počet vad",
+    "defectiveItems": "Vadné kusy",
+    "defectRate": "Vadovost",
+    "hasPhotos": "Fotky",
+    "detailDescription": "Detail kontrolní session",
+    "takeover": "Převzít kontrolu",
+    "takeoverConfirm": "Opravdu chcete převzít tuto kontrolu? Původní uživatel bude odhlášen.",
+    "takeoverSuccess": "Kontrola byla úspěšně převzata",
+    "continueSession": "Pokračovat v kontrole",
+    "takenOver": "Kontrola byla převzata",
+    "takenOverDescription": "Vaše kontrola byla převzata jiným uživatelem. Byli jste odhlášeni z této session.",
     "statuses": {
       "OPEN": "Probíhá",
       "PAUSED": "Pozastaveno",
@@ -149,6 +171,8 @@
     "heatmap": "Mapa vad",
     "kpi": "KPI metriky",
     "topDefects": "Nejčastější vady",
+    "recentPhotos": "Nedávné fotky",
+    "noPhotos": "Zatím žádné fotky",
     "selectProduct": "Vyberte produkt",
     "selectPeriod": "Období",
     "periods": {
@@ -161,6 +185,7 @@
       "totalInspected": "Zkontrolováno",
       "defectiveItems": "Vadných kusů",
       "defectRate": "Míra vadovosti",
+      "totalDefects": "Celkem vad",
       "trend": "Trend"
     }
   },

@@ -17,6 +17,7 @@ interface DefectDetailProps {
   onClose: () => void;
   onUpdate: (defectId: string, data: { defectTypeId?: string; severity?: number; notes?: string }) => void;
   onDelete: (defectId: string) => void;
+  onPhotoChange?: (defectId: string, photos: DefectPhoto[]) => void;
 }
 
 export function DefectDetail({
@@ -26,6 +27,7 @@ export function DefectDetail({
   onClose,
   onUpdate,
   onDelete,
+  onPhotoChange,
 }: DefectDetailProps) {
   const { t, i18n } = useTranslation();
   const [notes, setNotes] = useState('');
@@ -54,18 +56,23 @@ export function DefectDetail({
   };
 
   const handleDelete = () => {
-    if (confirm(t('common.confirm') + '?')) {
-      onDelete(defect.id);
-      onClose();
-    }
+    onDelete(defect.id);
   };
 
   const handlePhotoAdded = (photo: DefectPhoto) => {
-    setPhotos([...photos, photo]);
+    const newPhotos = [...photos, photo];
+    setPhotos(newPhotos);
+    if (defect && onPhotoChange) {
+      onPhotoChange(defect.id, newPhotos);
+    }
   };
 
   const handlePhotoDeleted = (photoId: string) => {
-    setPhotos(photos.filter((p) => p.id !== photoId));
+    const newPhotos = photos.filter((p) => p.id !== photoId);
+    setPhotos(newPhotos);
+    if (defect && onPhotoChange) {
+      onPhotoChange(defect.id, newPhotos);
+    }
   };
 
   return (

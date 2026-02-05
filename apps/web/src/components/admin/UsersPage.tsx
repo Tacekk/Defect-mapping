@@ -220,7 +220,7 @@ export function UsersPage() {
             <div className="space-y-2">
               <Label>{t('users.role')}</Label>
               <Select
-                value={selectedRole}
+                value={selectedRole || Role.INSPECTOR}
                 onValueChange={(value) => setValue('role', value as Role)}
               >
                 <SelectTrigger>
@@ -238,14 +238,14 @@ export function UsersPage() {
             <div className="space-y-2">
               <Label>{t('users.defaultWorkstation')}</Label>
               <Select
-                value={watch('defaultWorkstationId') || ''}
-                onValueChange={(value) => setValue('defaultWorkstationId', value || undefined)}
+                value={watch('defaultWorkstationId') || 'none'}
+                onValueChange={(value) => setValue('defaultWorkstationId', value === 'none' ? undefined : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select workstation" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {workstations?.map((ws) => (
                     <SelectItem key={ws.id} value={ws.id}>
                       {ws.name}

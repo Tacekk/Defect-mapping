@@ -20,7 +20,8 @@
     "no": "No",
     "back": "Back",
     "next": "Next",
-    "previous": "Previous"
+    "previous": "Previous",
+    "all": "All"
   },
   "auth": {
     "login": "Log in",
@@ -34,6 +35,7 @@
   },
   "nav": {
     "inspection": "Inspection",
+    "mySessions": "My Sessions",
     "admin": "Administration",
     "board": "Dashboard",
     "settings": "Settings"
@@ -79,7 +81,16 @@
     "workstations": "Workstations",
     "defectTypes": "Defect Types",
     "sessions": "Sessions",
+    "photos": "Photos",
     "auditLogs": "Audit Log"
+  },
+  "photos": {
+    "title": "Photo Management",
+    "noPhotos": "No photos",
+    "deleted": "Photo deleted",
+    "deleteFailed": "Failed to delete photo",
+    "deleteConfirm": "Are you sure you want to delete this photo?",
+    "totalCount": "Total: {{count}} photos"
   },
   "users": {
     "title": "User Management",
@@ -130,6 +141,7 @@
   },
   "sessions": {
     "title": "Session Overview",
+    "mySessions": "My Sessions",
     "product": "Product",
     "workstation": "Workstation",
     "user": "User",
@@ -138,6 +150,16 @@
     "endedAt": "Ended at",
     "itemsCount": "Items count",
     "defectsCount": "Defects count",
+    "defectiveItems": "Defective items",
+    "defectRate": "Defect rate",
+    "hasPhotos": "Photos",
+    "detailDescription": "Inspection session details",
+    "takeover": "Takeover Session",
+    "takeoverConfirm": "Are you sure you want to takeover this session? The original user will be disconnected.",
+    "takeoverSuccess": "Session successfully taken over",
+    "continueSession": "Continue Session",
+    "takenOver": "Session was taken over",
+    "takenOverDescription": "Your session was taken over by another user. You have been logged out from this session.",
     "statuses": {
       "OPEN": "In progress",
       "PAUSED": "Paused",
@@ -149,6 +171,8 @@
     "heatmap": "Defect Map",
     "kpi": "KPI Metrics",
     "topDefects": "Top Defects",
+    "recentPhotos": "Recent Photos",
+    "noPhotos": "No photos yet",
     "selectProduct": "Select product",
     "selectPeriod": "Period",
     "periods": {
@@ -161,6 +185,7 @@
       "totalInspected": "Inspected",
       "defectiveItems": "Defective items",
       "defectRate": "Defect rate",
+      "totalDefects": "Total defects",
       "trend": "Trend"
     }
   },

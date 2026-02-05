@@ -8,6 +8,7 @@ import {
   Menu,
   X,
   Globe,
+  History,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -38,6 +39,12 @@ export function Layout() {
       to: '/inspection',
       icon: ClipboardCheck,
       label: t('nav.inspection'),
+      roles: [Role.ADMIN, Role.INSPECTOR, Role.QUALITY],
+    },
+    {
+      to: '/my-sessions',
+      icon: History,
+      label: t('nav.mySessions'),
       roles: [Role.ADMIN, Role.INSPECTOR, Role.QUALITY],
     },
     {

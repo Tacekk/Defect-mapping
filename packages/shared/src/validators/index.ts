@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Role, SessionStatus, ItemStatus } from '../types';
+import { Role, SessionStatus, ItemStatus } from '../types/index.js';
 
 // ============================================
 // Auth Validators

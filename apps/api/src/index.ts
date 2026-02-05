@@ -43,7 +43,7 @@ async function buildApp() {
 
   // Register plugins
   await fastify.register(cors, {
-    origin: config.corsOrigin,
+    origin: config.corsOrigin === '*' ? true : config.corsOrigin,
     credentials: true,
   });
 

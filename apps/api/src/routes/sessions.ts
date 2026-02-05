@@ -37,8 +37,19 @@ const sessionsRoutes: FastifyPluginAsync = async (fastify) => {
             user: {
               select: { id: true, name: true, email: true },
             },
-            _count: {
-              select: { items: true },
+            items: {
+              select: {
+                status: true,
+                defects: {
+                  select: {
+                    id: true,
+                    photos: {
+                      select: { id: true },
+                      take: 1, // Only need to know if any photos exist
+                    },
+                  },
+                },
+              },
             },
           },
           orderBy: { startedAt: 'desc' },
@@ -48,10 +59,35 @@ const sessionsRoutes: FastifyPluginAsync = async (fastify) => {
         prisma.session.count({ where }),
       ]);
 
+      // Calculate stats for each session
+      const sessionsWithStats = sessions.map((session) => {
+        const itemsCount = session.items.length;
+        const defectiveItems = session.items.filter((i) => i.status === 'DEFECTIVE').length;
+        const totalDefects = session.items.reduce((sum, item) => sum + item.defects.length, 0);
+        const hasPhotos = session.items.some((item) =>
+          item.defects.some((defect) => defect.photos.length > 0)
+        );
+        const defectRate = itemsCount > 0 ? (defectiveItems / itemsCount) * 100 : 0;
+
+        // Remove items from response to keep payload small
+        const { items, ...sessionWithoutItems } = session;
+
+        return {
+          ...sessionWithoutItems,
+          _count: { items: itemsCount },
+          _stats: {
+            defectiveItems,
+            totalDefects,
+            defectRate,
+            hasPhotos,
+          },
+        };
+      });
+
       return reply.send({
         success: true,
         data: {
-          data: sessions,
+          data: sessionsWithStats,
           total,
           page,
           pageSize,
@@ -183,6 +219,89 @@ const sessionsRoutes: FastifyPluginAsync = async (fastify) => {
     }
   });
 
+  // Takeover session (reassign to current user)
+  fastify.post('/:id/takeover', { preHandler: requireInspector }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+
+      const session = await prisma.session.findUnique({
+        where: { id },
+        include: {
+          product: true,
+          workstation: true,
+          user: {
+            select: { id: true, name: true, email: true },
+          },
+          items: {
+            include: {
+              defects: {
+                include: {
+                  defectType: true,
+                },
+              },
+            },
+            orderBy: { sequence: 'asc' },
+          },
+        },
+      });
+
+      if (!session) {
+        throw new NotFoundError('Session not found');
+      }
+
+      if (session.status === 'CLOSED') {
+        throw new ForbiddenError('Cannot takeover a closed session');
+      }
+
+      const previousUserId = session.userId;
+
+      // Reassign session to current user
+      const updatedSession = await prisma.session.update({
+        where: { id },
+        data: {
+          userId: request.user.userId,
+          status: 'OPEN',
+        },
+        include: {
+          product: true,
+          workstation: true,
+          user: {
+            select: { id: true, name: true, email: true },
+          },
+          items: {
+            include: {
+              defects: {
+                include: {
+                  defectType: true,
+                },
+              },
+            },
+            orderBy: { sequence: 'asc' },
+          },
+        },
+      });
+
+      await createAuditLog({
+        userId: request.user.userId,
+        action: 'UPDATE',
+        entityType: 'Session',
+        entityId: session.id,
+        changes: {
+          action: 'TAKEOVER',
+          previousUserId,
+          newUserId: request.user.userId,
+        },
+      });
+
+      return reply.send({
+        success: true,
+        data: updatedSession,
+      });
+    } catch (error) {
+      return handleError(error, reply);
+    }
+  });
+
   // Delete session (admin only)
   fastify.delete('/:id', { preHandler: requireAdmin }, async (request, reply) => {
     try {
@@ -295,6 +414,42 @@ const sessionsRoutes: FastifyPluginAsync = async (fastify) => {
     }
   });
 
+  // Update defect
+  fastify.patch('/defects/:defectId', { preHandler: requireInspector }, async (request, reply) => {
+    try {
+      const { defectId } = request.params as { defectId: string };
+      const data = request.body as { defectTypeId?: string; severity?: number; notes?: string };
+
+      const defect = await prisma.defect.findUnique({
+        where: { id: defectId },
+      });
+
+      if (!defect) {
+        throw new NotFoundError('Defect not found');
+      }
+
+      const updatedDefect = await prisma.defect.update({
+        where: { id: defectId },
+        data: {
+          ...(data.defectTypeId && { defectTypeId: data.defectTypeId }),
+          ...(data.severity !== undefined && { severity: data.severity }),
+          ...(data.notes !== undefined && { notes: data.notes }),
+        },
+        include: {
+          defectType: true,
+          photos: true,
+        },
+      });
+
+      return reply.send({
+        success: true,
+        data: updatedDefect,
+      });
+    } catch (error) {
+      return handleError(error, reply);
+    }
+  });
+
   // Delete defect
   fastify.delete('/defects/:defectId', { preHandler: requireInspector }, async (request, reply) => {
     try {
@@ -302,13 +457,21 @@ const sessionsRoutes: FastifyPluginAsync = async (fastify) => {
 
       const defect = await prisma.defect.findUnique({
         where: { id: defectId },
-        include: { item: true },
+        include: { item: true, photos: true },
       });
 
       if (!defect) {
         throw new NotFoundError('Defect not found');
       }
 
+      // Delete photos first (explicit cascade)
+      if (defect.photos && defect.photos.length > 0) {
+        await prisma.defectPhoto.deleteMany({
+          where: { defectId: defectId },
+        });
+      }
+
+      // Delete the defect
       await prisma.defect.delete({ where: { id: defectId } });
 
       // Check if item has any remaining defects

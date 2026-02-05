@@ -9,10 +9,25 @@ interface DefectHeatmapProps {
 }
 
 export function DefectHeatmap({ data, defectTypes, isLoading }: DefectHeatmapProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 600, height: 400 });
+
+  // Collect unique defect types from data points with counts
+  const defectTypeCounts = new Map<string, { type: DefectType; count: number }>();
+  data?.dataPoints.forEach((point) => {
+    const existing = defectTypeCounts.get(point.defectTypeId);
+    if (existing) {
+      existing.count++;
+    } else {
+      const dt = defectTypes.find((t) => t.id === point.defectTypeId);
+      if (dt) {
+        defectTypeCounts.set(point.defectTypeId, { type: dt, count: 1 });
+      }
+    }
+  });
+  const legendItems = Array.from(defectTypeCounts.values()).sort((a, b) => b.count - a.count);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -73,16 +88,37 @@ export function DefectHeatmap({ data, defectTypes, isLoading }: DefectHeatmapPro
   }
 
   return (
-    <div ref={containerRef} className="relative w-full">
-      <canvas
-        ref={canvasRef}
-        width={dimensions.width}
-        height={dimensions.height}
-        className="w-full rounded-lg bg-muted"
-      />
-      <div className="absolute bottom-2 right-2 bg-background/80 px-2 py-1 rounded text-xs">
-        {data.totalDefects} defects
+    <div ref={containerRef} className="w-full space-y-2">
+      <div className="relative">
+        <canvas
+          ref={canvasRef}
+          width={dimensions.width}
+          height={dimensions.height}
+          className="w-full rounded-lg bg-muted"
+        />
       </div>
+      {legendItems.length > 0 && (
+        <div className="flex flex-wrap gap-x-3 gap-y-1">
+          {legendItems.slice(0, 6).map(({ type, count }) => (
+            <div key={type.id} className="flex items-center gap-1 text-xs">
+              <span
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: type.color }}
+              />
+              <span 
+                className="text-muted-foreground truncate max-w-[80px]" 
+                title={i18n.language === 'en' && type.nameEn ? type.nameEn : type.name}
+              >
+                {i18n.language === 'en' && type.nameEn ? type.nameEn : type.name}
+              </span>
+              <span className="text-muted-foreground">({count})</span>
+            </div>
+          ))}
+          {legendItems.length > 6 && (
+            <span className="text-xs text-muted-foreground">+{legendItems.length - 6}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
