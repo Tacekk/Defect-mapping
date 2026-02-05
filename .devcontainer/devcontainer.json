@@ -28,7 +28,7 @@
     }
   },
   "postCreateCommand": "npm install -g pnpm && pnpm install && pnpm db:generate",
-  "postStartCommand": "docker compose -f docker-compose.dev.yml up -d && sleep 5 && pnpm db:push && pnpm dev",
+  "postStartCommand": ".devcontainer/start.sh",
   "customizations": {
     "vscode": {
       "extensions": [
