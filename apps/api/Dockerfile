@@ -34,16 +34,20 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 
 # Copy package files and install production dependencies
-COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml* ./
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/apps/api/package.json ./apps/api/
 COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 
 RUN pnpm install --prod
 
-# Copy built files
-COPY --from=builder /app/apps/api/dist ./apps/api/dist
+# Copy Prisma schema and generate client
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
-COPY --from=builder /app/apps/api/node_modules/.prisma ./apps/api/node_modules/.prisma
+WORKDIR /app/apps/api
+RUN pnpm exec prisma generate
+
+# Copy built files
+WORKDIR /app
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/packages/shared ./packages/shared
 
 # Create uploads directory
