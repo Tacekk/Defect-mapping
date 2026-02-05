@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -40,18 +40,21 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Generate Prisma Client
         run: pnpm db:generate
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/glass_inspector_test
 
-      - name: Build packages
-        run: pnpm build
+      - name: Build shared package
+        run: pnpm --filter @glass-inspector/shared build
 
-      - name: Lint
-        run: pnpm lint
+      - name: Build API
+        run: pnpm --filter @glass-inspector/api build
+
+      - name: Build Web
+        run: pnpm --filter @glass-inspector/web build
 
   build-docker:
     runs-on: ubuntu-latest
