@@ -1,9 +1,11 @@
 {
   "name": "Glass Inspector",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:20-bookworm",
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  },
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+"features": {
+  "ghcr.io/devcontainers/features/docker-in-docker:2": {
+    "moby": false
+  }
+},
   "forwardPorts": [5173, 3001, 5432, 6379],
   "portsAttributes": {
     "5173": {
