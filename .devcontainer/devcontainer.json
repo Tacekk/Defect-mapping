@@ -5,6 +5,9 @@
   "ghcr.io/devcontainers/features/docker-in-docker:2": {
     "moby": false
   }
+  "ghcr.io/devcontainers/features/sshd:1": {
+        "version": "latest"
+    }
 },
   "forwardPorts": [5173, 3001, 5432, 6379],
   "portsAttributes": {
